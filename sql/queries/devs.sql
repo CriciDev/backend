@@ -1,10 +1,5 @@
-CREATE TABLE devs (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    skills TEXT,
-    bio TEXT,
-    availability BOOLEAN NOT NULL DEFAULT true,
-    socials TEXT[],
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+-- name: CreateDev :one
+INSERT INTO devs (name, email, password, skills, bio, availability, socials) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING name, email, skills, bio, availability, socials, created_at;
+
+-- name: FindDevByEmail :one
+SELECT name, email, skills, bio, availability, socials, created_at FROM devs WHERE email = $1;
