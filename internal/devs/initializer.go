@@ -3,7 +3,7 @@ package devs
 import "database/sql"
 
 func InitializeDevController(db *sql.DB) *DevController {
-	repository := NewDevRepository(db)
+	repository := New(db)
 	usecase := NewDevUseCase(repository)
 	controller := NewDevController(usecase)
 
