@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -13,13 +12,9 @@ func main() {
 
 	db := infra.InitDB()
 
-	devController := devs.InitializeDevController(db)
+	devs.InitializeDevContext(db)
 
 	fmt.Println("Iniciando servidor")
-
-	http.HandleFunc("/devs", func(w http.ResponseWriter, r *http.Request) {
-		devController.CreateDev(context.Background(), w, r)
-	})
 
 	fmt.Println("Servidor iniciado")
 	http.ListenAndServe(":8080", nil)
