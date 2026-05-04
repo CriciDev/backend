@@ -22,11 +22,6 @@ func NewDevController(usecase *DevUseCase) *DevController {
 
 func (controller *DevController) CreateDev(ctx context.Context, writer http.ResponseWriter, request *http.Request) {
 
-	if request.Method != http.MethodPost {
-		handlers.ResponseWithHttpError(writer, http.StatusMethodNotAllowed, "Method not Allowed")
-		return
-	}
-
 	var dev = Dev{}
 
 	err := json.NewDecoder(request.Body).Decode(&dev)
