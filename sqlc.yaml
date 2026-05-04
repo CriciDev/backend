@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - name: "devs"
+    schema: "sql/schemas/devs.sql"       
+    queries: "sql/queries/devs.sql"    
+    engine: "postgresql"       
+    gen:
+      go:
+        package: "devs"          
+        out: "internal/devs"     
+        emit_json_tags: true
