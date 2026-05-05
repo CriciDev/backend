@@ -2,9 +2,10 @@ package devs
 
 import (
 	"context"
+	"log"
 
 	"github.com/CriciumaDevJobs/backend/handlers"
-	"github.com/CriciumaDevJobs/backend/internal/auth"
+	"github.com/CriciumaDevJobs/backend/utils"
 )
 
 type DevUseCase struct {
@@ -19,24 +20,24 @@ func NewDevUseCase(devRepository *Queries) *DevUseCase {
 	return &usecase
 }
 
-func (usecase *DevUseCase) CreateDev(ctx context.Context, dev *Dev) (CreateDevRow, error) {
+func (usecase *DevUseCase) CreateDev(ctx context.Context, dev *Dev) (*CreateDevRow, *handlers.ErrorResponse) {
 
-	err := dev.validate()
+	http_err := dev.validate()
 
-	if err != nil {
-		return CreateDevRow{}, err
+	if http_err != nil {
+		return nil, http_err
 	}
 
-	_, err = usecase.Repository.FindDevByEmail(ctx, dev.Email)
+	_, db_err := usecase.Repository.FindDevByEmail(ctx, dev.Email)
 
-	if err == nil {
-		return CreateDevRow{}, handlers.ErrEmailAlreadyInUse
+	if db_err == nil {
+		return nil, handlers.ErrEmailAlreadyInUse
 	}
 
-	hashedPassword, err := auth.EncryptPassword(dev.Password)
+	hashedPassword, http_err := utils.EncryptPassword(dev.Password)
 
-	if err != nil {
-		return CreateDevRow{}, err
+	if http_err != nil {
+		return nil, http_err
 	}
 
 	var devParams = CreateDevParams{
@@ -49,10 +50,37 @@ func (usecase *DevUseCase) CreateDev(ctx context.Context, dev *Dev) (CreateDevRo
 		Socials:      dev.Socials,
 	}
 
-	return usecase.Repository.CreateDev(ctx, devParams)
+	resp, db_err := usecase.Repository.CreateDev(ctx, devParams)
+
+	if db_err != nil {
+		log.Printf("ERRO: Falha no banco de dados ao salvar novo usuário! Message: %s", db_err.Error())
+		return nil, handlers.NewError(500, "Erro Interno!")
+	}
+
+	return &resp, nil
 }
 
-func (dev *Dev) validate() error {
+func (usecase *DevUseCase) FindDevByEmail(ctx context.Context, email string) (*FindDevByEmailRow, *handlers.ErrorResponse) {
+	dev, err := usecase.Repository.FindDevByEmail(ctx, email)
+
+	if err != nil {
+		return nil, handlers.ErrInvalidEmailOrPassword
+	}
+
+	return &dev, nil
+}
+
+func (usecase *DevUseCase) FindDevByID(ctx context.Context, id int32) (*FindDevByIDRow, *handlers.ErrorResponse) {
+	dev, err := usecase.Repository.FindDevByID(ctx, id)
+
+	if err != nil {
+		return nil, handlers.ErrProfileNotFound
+	}
+
+	return &dev, nil
+}
+
+func (dev *Dev) validate() *handlers.ErrorResponse {
 	if dev.Name == "" {
 		return handlers.ErrNameNotEmpty
 	}
