@@ -2,6 +2,7 @@ package devs
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/CriciumaDevJobs/backend/handlers"
@@ -46,20 +47,16 @@ func (controller *DevController) FindDevProfile(writer http.ResponseWriter, requ
 
 	writer.Header().Set("Content-Type", "application/json")
 
-	value := request.Context().Value("user_id")
+	devID, err := extractUserIDFromRequestToken(request)
 
-	val, ok := value.(float64)
-
-	if !ok {
-		handlers.ResponseWithHttpError(writer, http.StatusInternalServerError, "Erro foda")
+	if err != nil {
+		handlers.ResponseWithHttpError(writer, err.Code, err.Message)
 		return
 	}
 
-	var devID int32
+	log.Println(*devID)
 
-	devID = int32(val)
-
-	resp, err := controller.Usecase.FindDevByID(request.Context(), devID)
+	resp, err := controller.Usecase.FindDevByID(request.Context(), *devID)
 
 	if err != nil {
 		handlers.ResponseWithHttpError(writer, err.Code, err.Message)
@@ -67,4 +64,21 @@ func (controller *DevController) FindDevProfile(writer http.ResponseWriter, requ
 	}
 
 	json.NewEncoder(writer).Encode(resp)
+}
+
+func extractUserIDFromRequestToken(request *http.Request) (*int32, *handlers.ErrorResponse) {
+
+	value := request.Context().Value("user_id")
+
+	val, ok := value.(float64)
+
+	if !ok {
+		log.Printf("ERRO: Falha ao extrair ID do usuário no token JWT!")
+		return nil, handlers.NewError(http.StatusInternalServerError, "Erro Interno!")
+	}
+
+	var id = int32(val)
+
+	return &id, nil
+
 }
