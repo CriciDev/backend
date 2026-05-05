@@ -59,6 +59,17 @@ func (q *Queries) CreateDev(ctx context.Context, arg CreateDevParams) (CreateDev
 	return i, err
 }
 
+const emailAlreadyRegistered = `-- name: EmailAlreadyRegistered :one
+SELECT count(*) AS total FROM devs WHERE email = $1
+`
+
+func (q *Queries) EmailAlreadyRegistered(ctx context.Context, email string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, emailAlreadyRegistered, email)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const findDevByEmail = `-- name: FindDevByEmail :one
 SELECT id, name, email, password FROM devs WHERE email = $1
 `

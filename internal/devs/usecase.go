@@ -29,9 +29,14 @@ func (usecase *DevUseCase) CreateDev(ctx context.Context, dev *Dev) (*CreateDevR
 		return nil, http_err
 	}
 
-	_, db_err := usecase.Repository.FindDevByEmail(ctx, dev.Email)
+	row_count, err := usecase.Repository.EmailAlreadyRegistered(ctx, dev.Email)
 
-	if db_err == nil {
+	if err != nil {
+		log.Printf("ERRO: Falha ao executar busca no banco de dados! Message: %s", err.Error())
+		return nil, handlers.NewError(http.StatusInternalServerError, "Erro Interno!")
+	}
+
+	if row_count > 0 {
 		return nil, handlers.ErrEmailAlreadyInUse
 	}
 
@@ -79,6 +84,17 @@ func (usecase *DevUseCase) FindDevByID(ctx context.Context, id int32) (*FindDevB
 	}
 
 	return &dev, nil
+}
+
+func (usecase *DevUseCase) DevExistsByEmail(ctx context.Context, email string) (int64, *handlers.ErrorResponse) {
+	row_count, err := usecase.Repository.EmailAlreadyRegistered(ctx, email)
+
+	if err != nil {
+		log.Printf("ERRO: Falha ao executar busca no banco de dados! Message: %s", err.Error())
+		return 0, handlers.NewError(http.StatusInternalServerError, "Erro Interno!")
+	}
+
+	return row_count, nil
 }
 
 func (dev *Dev) validate() *handlers.ErrorResponse {
