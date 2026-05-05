@@ -36,7 +36,7 @@ func AuthenticationMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		authHeader := r.Header.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "Token ausente ou malformatado", http.StatusUnauthorized)
+			handlers.ResponseWithHttpError(w, http.StatusUnauthorized, "Token ausente ou malformatado")
 			return
 		}
 
