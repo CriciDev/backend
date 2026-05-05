@@ -1,7 +1,6 @@
 package devs
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -20,21 +19,50 @@ func NewDevController(usecase *DevUseCase) *DevController {
 	return &controller
 }
 
-func (controller *DevController) CreateDev(ctx context.Context, writer http.ResponseWriter, request *http.Request) {
+func (controller *DevController) CreateDev(writer http.ResponseWriter, request *http.Request) {
+
+	writer.Header().Set("Content-Type", "application/json")
 
 	var dev = Dev{}
 
-	err := json.NewDecoder(request.Body).Decode(&dev)
+	json_err := json.NewDecoder(request.Body).Decode(&dev)
 
-	if err != nil {
+	if json_err != nil {
 		handlers.ResponseWithHttpError(writer, http.StatusBadRequest, "JSON Enviado não segue a estrutura esperada!")
 		return
 	}
 
-	resp, err := controller.Usecase.CreateDev(ctx, &dev)
+	resp, http_err := controller.Usecase.CreateDev(request.Context(), &dev)
+
+	if http_err != nil {
+		handlers.ResponseWithHttpError(writer, http_err.Code, http_err.Message)
+		return
+	}
+
+	json.NewEncoder(writer).Encode(resp)
+}
+
+func (controller *DevController) FindDevProfile(writer http.ResponseWriter, request *http.Request) {
+
+	writer.Header().Set("Content-Type", "application/json")
+
+	value := request.Context().Value("user_id")
+
+	val, ok := value.(float64)
+
+	if !ok {
+		handlers.ResponseWithHttpError(writer, 500, "Erro foda")
+		return
+	}
+
+	var devID int32
+
+	devID = int32(val)
+
+	resp, err := controller.Usecase.FindDevByID(request.Context(), devID)
 
 	if err != nil {
-		handlers.ResponseWithHttpError(writer, http.StatusUnprocessableEntity, err.Error())
+		handlers.ResponseWithHttpError(writer, err.Code, err.Message)
 		return
 	}
 
