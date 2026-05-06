@@ -1,21 +1,29 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/CriciumaDevJobs/backend/infra"
 	"github.com/CriciumaDevJobs/backend/internal"
 )
 
+var (
+	PORT = ":8080"
+)
+
 func main() {
 
 	db := infra.InitDB()
+	log.Printf("Conexão com Banco de Dados bem sucedida!")
 
 	app := internal.StartAppContext(db)
 
-	fmt.Println("Iniciando servidor")
+	log.Printf("Subindo Servidor HTTP na Porta %s", PORT)
+	err := http.ListenAndServe(PORT, app.Router)
 
-	fmt.Println("Servidor iniciado")
-	http.ListenAndServe(":8080", app.Router)
+	if err != nil {
+		log.Printf("ERRO: Falha ao subir servidor HTTP! Message: %s", err.Error())
+		panic(err)
+	}
 }
