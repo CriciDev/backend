@@ -9,3 +9,4 @@ sql:
         package: "devs"          
         out: "internal/devs"     
         emit_json_tags: true
+   
