@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/CriciumaDevJobs/backend/handlers"
 	"github.com/CriciumaDevJobs/backend/internal/devs"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,7 +20,7 @@ func NewAuthenticationUseCase(devUseCase *devs.DevUseCase) *AuthenticationUseCas
 	return &auth
 }
 
-func (usecase *AuthenticationUseCase) AuthenticateUser(ctx context.Context, email string, password string) (*AuthenticationResponse, *handlers.ErrorResponse) {
+func (usecase *AuthenticationUseCase) AuthenticateUser(ctx context.Context, email string, password string) (*AuthenticationResponse, error) {
 	dev, err := usecase.DevUseCase.FindDevByEmail(ctx, email)
 
 	if err != nil {
@@ -31,7 +30,7 @@ func (usecase *AuthenticationUseCase) AuthenticateUser(ctx context.Context, emai
 	bcrypterr := bcrypt.CompareHashAndPassword([]byte(dev.Password), []byte(password))
 
 	if bcrypterr != nil {
-		return nil, handlers.ErrInvalidEmailOrPassword
+		return nil, devs.ErrInvalidEmailOrPassword
 	}
 
 	expiration := time.Now().Add(time.Hour * 4)
