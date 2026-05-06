@@ -30,11 +30,10 @@ func (usecase *DevUseCase) CreateDev(ctx context.Context, dev *Dev) (*CreateDevR
 		return nil, http_err
 	}
 
-	row_count, err := usecase.Repository.EmailAlreadyRegistered(ctx, dev.Email)
+	row_count, err := usecase.DevExistsByEmail(ctx, dev.Email)
 
 	if err != nil {
-		log.Printf("ERRO: Falha ao executar busca no banco de dados! Message: %s", err.Error())
-		return nil, handlers.NewError(http.StatusInternalServerError, "Erro Interno!")
+		return nil, err
 	}
 
 	if row_count > 0 {
