@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/CriciumaDevJobs/backend/handlers"
+	"github.com/CriciumaDevJobs/backend/internal/devs"
 )
 
 type AuthenticationController struct {
@@ -35,7 +36,8 @@ func (controller *AuthenticationController) AuthenticateUser(w http.ResponseWrit
 	resp, httpErr := controller.AuthUseCase.AuthenticateUser(r.Context(), req.Email, req.Password)
 
 	if httpErr != nil {
-		handlers.ResponseWithHttpError(w, httpErr.Code, httpErr.Message)
+		resp := devs.CheckUseCaseErr(httpErr)
+		handlers.ResponseWithHttpError(w, resp.Code, resp.Message)
 		return
 	}
 

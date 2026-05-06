@@ -29,14 +29,16 @@ func (controller *DevController) CreateDev(writer http.ResponseWriter, request *
 	jsonErr := json.NewDecoder(request.Body).Decode(&dev)
 
 	if jsonErr != nil {
-		handlers.ResponseWithHttpError(writer, http.StatusBadRequest, "JSON Enviado não segue a estrutura esperada!")
+		resp := CheckUseCaseErr(ErrJsonNotExpected)
+		handlers.ResponseWithHttpError(writer, resp.Code, resp.Message)
 		return
 	}
 
 	resp, httpErr := controller.Usecase.CreateDev(request.Context(), &dev)
 
 	if httpErr != nil {
-		handlers.ResponseWithHttpError(writer, httpErr.Code, httpErr.Message)
+		resp := CheckUseCaseErr(httpErr)
+		handlers.ResponseWithHttpError(writer, resp.Code, resp.Message)
 		return
 	}
 
@@ -54,10 +56,11 @@ func (controller *DevController) FindDevProfile(writer http.ResponseWriter, requ
 		return
 	}
 
-	resp, err := controller.Usecase.FindDevByID(request.Context(), *devID)
+	resp, httpErr := controller.Usecase.FindDevByID(request.Context(), *devID)
 
-	if err != nil {
-		handlers.ResponseWithHttpError(writer, err.Code, err.Message)
+	if httpErr != nil {
+		resp := CheckUseCaseErr(httpErr)
+		handlers.ResponseWithHttpError(writer, resp.Code, resp.Message)
 		return
 	}
 
