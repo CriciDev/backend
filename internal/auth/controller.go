@@ -25,17 +25,17 @@ func (controller *AuthenticationController) AuthenticateUser(w http.ResponseWrit
 
 	var req = AuthenticationRequest{}
 
-	json_err := json.NewDecoder(r.Body).Decode(&req)
+	jsonErr := json.NewDecoder(r.Body).Decode(&req)
 
-	if json_err != nil {
+	if jsonErr != nil {
 		handlers.ResponseWithHttpError(w, http.StatusBadRequest, "JSON Enviado não segue o padrão esperado")
 		return
 	}
 
-	resp, http_err := controller.AuthUseCase.AuthenticateUser(r.Context(), req.Email, req.Password)
+	resp, httpErr := controller.AuthUseCase.AuthenticateUser(r.Context(), req.Email, req.Password)
 
-	if http_err != nil {
-		handlers.ResponseWithHttpError(w, http_err.Code, http_err.Message)
+	if httpErr != nil {
+		handlers.ResponseWithHttpError(w, httpErr.Code, httpErr.Message)
 		return
 	}
 

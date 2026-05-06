@@ -16,10 +16,10 @@ func EncryptPassword(password string) (string, *handlers.ErrorResponse) {
 		return "", handlers.ErrPasswordToLong
 	}
 
-	hashedpassword, bcrypt_err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedpassword, bcryptErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
-	if bcrypt_err != nil {
-		log.Printf("ERRO: Falha ao encriptar senha! Message: %s", bcrypt_err.Error())
+	if bcryptErr != nil {
+		log.Printf("ERRO: Falha ao encriptar senha! Message: %s", bcryptErr.Error())
 		return "", handlers.NewError(http.StatusInternalServerError, "Erro interno!")
 	}
 

@@ -24,10 +24,10 @@ func NewDevUseCase(devRepository *Queries) *DevUseCase {
 
 func (usecase *DevUseCase) CreateDev(ctx context.Context, dev *Dev) (*CreateDevRow, *handlers.ErrorResponse) {
 
-	http_err := dev.validate()
+	httpErr := dev.validate()
 
-	if http_err != nil {
-		return nil, http_err
+	if httpErr != nil {
+		return nil, httpErr
 	}
 
 	row_count, err := usecase.DevExistsByEmail(ctx, dev.Email)
@@ -40,10 +40,10 @@ func (usecase *DevUseCase) CreateDev(ctx context.Context, dev *Dev) (*CreateDevR
 		return nil, handlers.ErrEmailAlreadyInUse
 	}
 
-	hashedPassword, http_err := utils.EncryptPassword(dev.Password)
+	hashedPassword, httpErr := utils.EncryptPassword(dev.Password)
 
-	if http_err != nil {
-		return nil, http_err
+	if httpErr != nil {
+		return nil, httpErr
 	}
 
 	var devParams = CreateDevParams{
@@ -56,10 +56,10 @@ func (usecase *DevUseCase) CreateDev(ctx context.Context, dev *Dev) (*CreateDevR
 		Socials:      dev.Socials,
 	}
 
-	resp, db_err := usecase.Repository.CreateDev(ctx, devParams)
+	resp, dbErr := usecase.Repository.CreateDev(ctx, devParams)
 
-	if db_err != nil {
-		log.Printf("ERRO: Falha no banco de dados ao salvar novo usuário! Message: %s", db_err.Error())
+	if dbErr != nil {
+		log.Printf("ERRO: Falha no banco de dados ao salvar novo usuário! Message: %s", dbErr.Error())
 		return nil, handlers.NewError(http.StatusInternalServerError, "Erro Interno!")
 	}
 

@@ -26,17 +26,17 @@ func (controller *DevController) CreateDev(writer http.ResponseWriter, request *
 
 	var dev = Dev{}
 
-	json_err := json.NewDecoder(request.Body).Decode(&dev)
+	jsonErr := json.NewDecoder(request.Body).Decode(&dev)
 
-	if json_err != nil {
+	if jsonErr != nil {
 		handlers.ResponseWithHttpError(writer, http.StatusBadRequest, "JSON Enviado não segue a estrutura esperada!")
 		return
 	}
 
-	resp, http_err := controller.Usecase.CreateDev(request.Context(), &dev)
+	resp, httpErr := controller.Usecase.CreateDev(request.Context(), &dev)
 
-	if http_err != nil {
-		handlers.ResponseWithHttpError(writer, http_err.Code, http_err.Message)
+	if httpErr != nil {
+		handlers.ResponseWithHttpError(writer, httpErr.Code, httpErr.Message)
 		return
 	}
 
