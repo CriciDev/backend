@@ -1,6 +1,10 @@
 package config
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"strings"
+)
 
 type (
 	Config struct {
@@ -12,20 +16,28 @@ type (
 	}
 )
 
-func Load() Config {
-	return Config{
-		HTTPPort:      env("HTTP_PORT", "8080"),
-		DatabaseURL:   env("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"),
-		JWTSecret:     env("JWT_SECRET", "local-dev-secret"),
-		AdminEmail:    env("ADMIN_EMAIL", "admin@criciumadevs.local"),
-		AdminPassword: env("ADMIN_PASSWORD", "admin123"),
+func Load() (Config, error) {
+	var missing []string
+
+	cfg := Config{
+		HTTPPort:      env("HTTP_PORT", &missing),
+		DatabaseURL:   env("DATABASE_URL", &missing),
+		JWTSecret:     env("JWT_SECRET", &missing),
+		AdminEmail:    env("ADMIN_EMAIL", &missing),
+		AdminPassword: env("ADMIN_PASSWORD", &missing),
 	}
+
+	if len(missing) > 0 {
+		return Config{}, fmt.Errorf("missing required environment variables: %s", strings.Join(missing, ", "))
+	}
+
+	return cfg, nil
 }
 
-func env(key string, fallback string) string {
+func env(key string, missing *[]string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		return fallback
+		*missing = append(*missing, key)
 	}
 	return value
 }
